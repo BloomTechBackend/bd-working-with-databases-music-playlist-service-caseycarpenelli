@@ -16,6 +16,7 @@ public class PlaylistDao {
      *
      * @param dynamoDbMapper the {@link DynamoDBMapper} used to interact with the playlists table
      */
+
     public PlaylistDao(DynamoDBMapper dynamoDbMapper) {
         this.dynamoDbMapper = dynamoDbMapper;
     }
@@ -35,4 +36,8 @@ public class PlaylistDao {
 
         return playlist;
     }
+    public Playlist savePlaylist(Playlist playList, String id) {
+        playList = getPlaylist(id);
+        return playList;
+    } // sure this doesn't work
 }
