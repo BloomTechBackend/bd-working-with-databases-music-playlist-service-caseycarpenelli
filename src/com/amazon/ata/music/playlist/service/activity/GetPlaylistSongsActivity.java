@@ -33,7 +33,7 @@ public class GetPlaylistSongsActivity implements RequestHandler<GetPlaylistSongs
     }
 
     /**
-     * This method handles the incoming request by retrieving the playlist from the database.
+     * This method handles the incoming request by retrieving the playlist from the databas.
      * <p>
      * It then returns the playlist's song list.
      * <p>
@@ -45,7 +45,6 @@ public class GetPlaylistSongsActivity implements RequestHandler<GetPlaylistSongs
     @Override
     public GetPlaylistSongsResult handleRequest(final GetPlaylistSongsRequest getPlaylistSongsRequest, Context context) {
         log.info("Received GetPlaylistSongsRequest {}", getPlaylistSongsRequest);
-
         return GetPlaylistSongsResult.builder()
                 .withSongList(Collections.singletonList(new SongModel()))
                 .build();
