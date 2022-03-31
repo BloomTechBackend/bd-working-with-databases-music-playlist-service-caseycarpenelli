@@ -1,14 +1,30 @@
 package com.amazon.ata.music.playlist.service.activity;
 
+import com.amazon.ata.music.playlist.service.converters.ModelConverter;
+import com.amazon.ata.music.playlist.service.dynamodb.models.AlbumTrack;
+import com.amazon.ata.music.playlist.service.dynamodb.models.Playlist;
+import com.amazon.ata.music.playlist.service.exceptions.InvalidAttributeChangeException;
+import com.amazon.ata.music.playlist.service.exceptions.InvalidAttributeException;
+import com.amazon.ata.music.playlist.service.exceptions.InvalidAttributeValueException;
+import com.amazon.ata.music.playlist.service.exceptions.PlaylistNotFoundException;
 import com.amazon.ata.music.playlist.service.models.PlaylistModel;
 import com.amazon.ata.music.playlist.service.models.requests.UpdatePlaylistRequest;
 import com.amazon.ata.music.playlist.service.models.results.UpdatePlaylistResult;
 import com.amazon.ata.music.playlist.service.dynamodb.PlaylistDao;
 
+import com.amazon.ata.music.playlist.service.util.MusicPlaylistServiceUtils;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import javax.inject.Inject;
+import javax.naming.directory.InvalidAttributesException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * Implementation of the UpdatePlaylistActivity for the MusicPlaylistService's UpdatePlaylist API.
@@ -24,6 +40,7 @@ public class UpdatePlaylistActivity implements RequestHandler<UpdatePlaylistRequ
      *
      * @param playlistDao PlaylistDao to access the playlist table.
      */
+    @Inject
     public UpdatePlaylistActivity(PlaylistDao playlistDao) {
         this.playlistDao = playlistDao;
     }
@@ -50,8 +67,48 @@ public class UpdatePlaylistActivity implements RequestHandler<UpdatePlaylistRequ
     public UpdatePlaylistResult handleRequest(final UpdatePlaylistRequest updatePlaylistRequest, Context context) {
         log.info("Received UpdatePlaylistRequest {}", updatePlaylistRequest);
 
+        Playlist playlist = playlistDao.getPlaylist(updatePlaylistRequest.getId());
+
+        String customerId = updatePlaylistRequest.getCustomerId();
+
+        String id = updatePlaylistRequest.getId();
+
+        String name = updatePlaylistRequest.getName();
+
+        List<AlbumTrack> songList = new ArrayList<>();
+
+        if (playlist == null) {
+            throw new InvalidAttributeValueException();
+        }
+
+        if (!Objects.equals(updatePlaylistRequest.getCustomerId(), playlist.getCustomerId())) {
+            throw new InvalidAttributeChangeException();
+        }
+
+        if (!MusicPlaylistServiceUtils.isValidString(customerId)) {
+            throw new InvalidAttributeValueException();
+        }
+        if (!MusicPlaylistServiceUtils.isValidString(name)) {
+            throw new InvalidAttributeValueException();
+        }
+
+
+
+//        playlist.setTags(tags);
+
+        playlist.setCustomerId(customerId);
+        playlist.setName(name);
+        playlist.setId(id);
+        playlist.setSongList(songList);
+
+        playlistDao.savePlaylist(playlist);
+
+        PlaylistModel playlistModel = new ModelConverter().toPlaylistModel(playlist);
+
+//        Set<String> tags = new HashSet<>(updatePlaylistRequest.getTags());
+
         return UpdatePlaylistResult.builder()
-                .withPlaylist(new PlaylistModel())
+                .withPlaylist(playlistModel)
                 .build();
     }
 }

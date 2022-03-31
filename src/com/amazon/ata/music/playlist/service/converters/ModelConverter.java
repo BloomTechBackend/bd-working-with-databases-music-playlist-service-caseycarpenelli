@@ -13,19 +13,22 @@ public class ModelConverter {
      * @param playlist the playlist to convert
      * @return the converted playlist
      */
-    ArrayList<String> tags1 = new ArrayList<>();
+
 
 
 
     public PlaylistModel toPlaylistModel(Playlist playlist) {
-        //im confused about how the set to ArrayList works
+        List<String> tags1 = null;
+        if (playlist.getTags() != null) {
+            tags1 = new ArrayList<>(playlist.getTags());
+
+        }
         return PlaylistModel.builder()
                 .withId(playlist.getId())
                 .withCustomerId(playlist.getCustomerId())
                 .withName(playlist.getName())
                 .withSongCount(playlist.getSongCount())
                 .withTags(tags1)
-
-            .build();
+                .build();
     }
 }

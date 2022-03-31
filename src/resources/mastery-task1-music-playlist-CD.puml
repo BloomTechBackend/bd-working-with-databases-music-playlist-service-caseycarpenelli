@@ -40,9 +40,14 @@ handleRequest(UpdatePlaylistRequest) : UpdatePlaylistResult
 class AlbumTrackNotFoundException
 class InvalidAttributeValueException
 class PlaylistNotFoundException
+class InvalidAttributeChangeException
+class InvalidAttributeException
 
 
-
+InvalidAttributeValueException --|> InvalidAttributeException
+InvalidAttributeChangeException --|> InvalidAttributeException
+InvalidAttributeValueException --o UpdatePlaylistActivity
+InvalidAttributeChangeException --o UpdatePlaylistActivity
 Playlist --o AlbumTrack
 Playlist *-- AlbumTrack
 AddSongToPlaylistActivity --o AlbumTrackDao
