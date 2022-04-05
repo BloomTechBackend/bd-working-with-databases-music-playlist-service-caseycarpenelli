@@ -34,7 +34,7 @@ public class GetPlaylistActivity implements RequestHandler<GetPlaylistRequest, G
     }
 
     /**
-     * This method handles the incoming request by retrieving the playlist from the datbase.
+     * This method handles the incoming request by retrieving the playlit from the datbase.
      * <p>
      * It then returns the playlist.
      * <p>
