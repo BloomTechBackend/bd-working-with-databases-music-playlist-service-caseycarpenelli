@@ -1,5 +1,10 @@
 package com.amazon.ata.music.playlist.service.activity;
 
+import com.amazon.ata.music.playlist.service.converters.ModelConverter;
+import com.amazon.ata.music.playlist.service.dynamodb.models.AlbumTrack;
+import com.amazon.ata.music.playlist.service.dynamodb.models.Playlist;
+import com.amazon.ata.music.playlist.service.exceptions.PlaylistNotFoundException;
+import com.amazon.ata.music.playlist.service.models.SongOrder;
 import com.amazon.ata.music.playlist.service.models.requests.GetPlaylistSongsRequest;
 import com.amazon.ata.music.playlist.service.models.results.GetPlaylistSongsResult;
 import com.amazon.ata.music.playlist.service.models.SongModel;
@@ -12,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import javax.inject.Inject;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Implementation of the GetPlaylistSongsActivity for the MusicPlaylistService's GetPlaylistSongs API.
@@ -33,7 +39,7 @@ public class GetPlaylistSongsActivity implements RequestHandler<GetPlaylistSongs
     }
 
     /**
-     * This method handles the incoming request by retrieving the playlist from the databas.
+     * This method handles the incoming request by retrieving the playlist from the database.
      * <p>
      * It then returns the playlist's song list.
      * <p>
@@ -45,8 +51,29 @@ public class GetPlaylistSongsActivity implements RequestHandler<GetPlaylistSongs
     @Override
     public GetPlaylistSongsResult handleRequest(final GetPlaylistSongsRequest getPlaylistSongsRequest, Context context) {
         log.info("Received GetPlaylistSongsRequest {}", getPlaylistSongsRequest);
+
+        String requestedId = getPlaylistSongsRequest.getId();
+
+        Playlist playlist = playlistDao.getPlaylist(requestedId);
+
+        if (playlist == null) {
+            throw new PlaylistNotFoundException();
+        }
+
+        List<AlbumTrack> albumTracks = playlist.getSongList();
+
+        ModelConverter modelConverter = new ModelConverter();
+
+        if (getPlaylistSongsRequest.getOrder() == SongOrder.REVERSED) {
+            Collections.reverse(albumTracks);
+        } else if (getPlaylistSongsRequest.getOrder() == SongOrder.SHUFFLED) {
+            Collections.shuffle(albumTracks);
+        }
+
+        List<SongModel> songModelList = modelConverter.toSongModelList(albumTracks);
+
         return GetPlaylistSongsResult.builder()
-                .withSongList(Collections.singletonList(new SongModel()))
+                .withSongList(songModelList)
                 .build();
     }
 }
